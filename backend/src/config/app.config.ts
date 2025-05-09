@@ -5,6 +5,8 @@ const appConfig = () => ({
   PORT: getEnv('PORT', '5000'),
   BASE_PATH: getEnv('BASE_PATH', '/api'),
 
+  DATABASE_URL: getEnv('DATABASE_URL'),
+
   SESSION_SECRET: getEnv('SESSION_SECRET'),
   SESSION_EXPIRES_IN: getEnv('SESSION_EXPIRES_IN'),
 
