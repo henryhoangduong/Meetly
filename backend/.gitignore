@@ -1,0 +1,36 @@
+# Node modules
+node_modules/
+
+# TypeScript build output
+dist/
+build/
+out/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.*.local
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# VSCode settings (optional, if you want to exclude editor configs)
+.vscode/
+
+# Coverage from testing
+coverage/
+
+# pm2 logs
+pids
+*.pid
+*.seed*
