@@ -5,22 +5,16 @@ import { plainToInstance } from 'class-transformer'
 import { RegisterDto } from '../database/dto/auth.dto'
 import { validate } from 'class-validator'
 import { ErrorCodeEnum } from '../enums/error-code.enum'
+import { withValidation } from '../middleware/withValidation.middleware'
 
-export const registerController = asyncHandler(async (req: Request, res: Response) => {
-  const body = req.body
-  const registerDto = plainToInstance(RegisterDto, body)
-  const errors = await validate(registerDto)
-  if (errors.length > 0) {
-    return res.status(HTTPSTATUS.BAD_REQUEST).json({
-      message: 'Validation error',
-      errorCode: ErrorCodeEnum.VALIDATION_ERROR,
-      errors: errors.map((error) => ({
-        field: error.property,
-        message: error.constraints
-      }))
+export const registerController = asyncHandler(
+  withValidation(
+    RegisterDto,
+    'body'
+  )(async (req: Request, res: Response, registerDto) => {
+    console.log(registerDto)
+    return res.status(HTTPSTATUS.CREATED).json({
+      message: 'User created successfully '
     })
-  }
-  return res.status(HTTPSTATUS.CREATED).json({
-    message: 'User created successfully '
   })
-})
+)
