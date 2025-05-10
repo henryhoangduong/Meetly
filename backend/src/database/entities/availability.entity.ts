@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
-  JoinColumn
+  JoinColumn,
+  OneToMany
 } from 'typeorm'
 import { User } from './user.entity'
+import { DayAvailability } from './day-availability.entity'
 
 @Entity()
 export class Availability {
@@ -16,6 +18,9 @@ export class Availability {
 
   @OneToOne(() => User, (user) => user.availability)
   user: User
+
+  @OneToMany(() => DayAvailability, (dayAva) => dayAva.availability)
+  days: DayAvailability[]
 
   @Column({ default: 30 })
   timeGap: number
