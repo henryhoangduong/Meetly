@@ -1,6 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany
+} from 'typeorm'
 import { IntegrationAppTypeEnum } from './integration.entity'
 import { User } from './user.entity'
+import { Meeting } from './meeting.entity'
 
 export enum EventLocationEnumType {
   GOOGLE_MEET_AND_CALENDAR = IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR,
@@ -26,7 +35,8 @@ export class Event {
 
   @ManyToOne(() => User, (user) => user.events)
   user: User
-
+  @OneToMany(() => Meeting, (meeting) => meeting.event)
+  meetings: Meeting[]
   @CreateDateColumn()
   createdAt: Date
 

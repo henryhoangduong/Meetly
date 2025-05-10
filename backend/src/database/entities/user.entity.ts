@@ -14,6 +14,7 @@ import { compareValue, hashValue } from '../../utils/bcrypt'
 import { Integration } from './integration.entity'
 import { Event } from './event.entity'
 import { Availability } from './availability.entity'
+import { Meeting } from './meeting.entity'
 @Entity({ name: 'user' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -47,6 +48,9 @@ export class User {
   @OneToOne(() => Availability, (availability) => availability.user, { cascade: true })
   @JoinColumn()
   availability: Availability
+
+  @OneToMany(() => Meeting, (meeting) => meeting.user)
+  meetings: Meeting[]
 
   @BeforeInsert()
   @BeforeUpdate()
