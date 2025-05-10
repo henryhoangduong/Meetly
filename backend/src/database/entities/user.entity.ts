@@ -4,13 +4,16 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm'
 import { compareValue, hashValue } from '../../utils/bcrypt'
 import { Integration } from './integration.entity'
 import { Event } from './event.entity'
+import { Availability } from './availability.entity'
 @Entity({ name: 'user' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -40,6 +43,10 @@ export class User {
 
   @OneToMany(() => Event, (event) => event.user, { cascade: true })
   events: Event[]
+
+  @OneToOne(() => Availability, (availability) => availability.user, { cascade: true })
+  @JoinColumn()
+  availability: Availability
 
   @BeforeInsert()
   @BeforeUpdate()

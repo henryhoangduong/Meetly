@@ -42,8 +42,10 @@ export class Integration {
 
   @Column({ type: 'enum', enum: IntegrationProviderEnum })
   provider: IntegrationProviderEnum
+
   @Column({ type: 'enum', enum: IntegrationCategoryEnum })
   category: IntegrationProviderEnum
+
   @Column({ type: 'enum', enum: IntegrationAppTypeEnum })
   app_type: IntegrationAppTypeEnum
 
