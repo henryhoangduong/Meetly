@@ -15,6 +15,7 @@ import { Integration } from './integration.entity'
 import { Event } from './event.entity'
 import { Availability } from './availability.entity'
 import { Meeting } from './meeting.entity'
+import { IsEmail } from 'class-validator'
 @Entity({ name: 'user' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -23,10 +24,13 @@ export class User {
   @Column({ nullable: false })
   name: string
 
+  @IsEmail()
   @Column({ nullable: false, unique: true })
   email: string
+
   @Column({ nullable: false, unique: true })
   username: string
+
   @Column({ nullable: false })
   password: string
 

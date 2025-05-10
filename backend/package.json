@@ -6,7 +6,12 @@
     "seed": "ts-node src/seeders/role.seeder.ts",
     "dev": "ts-node-dev --files src/index.ts",
     "build": "tsc && cp /package.json ./dist",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "typeorm": "typeorm-ts-node-commonjs -d ./src/config/database.config.ts",
+    "db:generate": "npm run typeorm -- migration:generate ./scr/database/migrations/CreateTables",
+    "db:migrate": "npm run typeorrm -- migration:run",
+    "db:revert": "npm run typeorrm -- migration:revert",
+    "db:drop": "npm run typeorrm -- schema:drop"
   },
   "keywords": [],
   "author": "",
@@ -14,10 +19,13 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
     "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "googleapis": "^148.0.0",
     "mongoose": "^8.14.2",
     "passport": "^0.7.0",
     "passport-google-oauth2": "^0.2.0",
