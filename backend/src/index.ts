@@ -6,6 +6,7 @@ import cors from 'cors'
 import { HTTPSTATUS } from './config/http.config'
 import { errorHandler } from './middleware/errorHandler.middleware'
 import { initializeDatabase } from './database/database'
+import { authRoutes } from './routes/auth.route'
 
 const app = express()
 const BASE_PATH = config.BASE_PATH
@@ -20,6 +21,7 @@ app.use(
     credentials: true
   })
 )
+app.use(`${BASE_PATH}/auth`, authRoutes)
 
 app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   res.status(HTTPSTATUS.OK).send('hello world')
