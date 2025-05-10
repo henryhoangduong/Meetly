@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn
 } from 'typeorm'
-import { User } from './user.entities'
+import { User } from './user.entity'
 
 export enum IntegrationProviderEnum {
   GOOGLE = 'GOOGLE',

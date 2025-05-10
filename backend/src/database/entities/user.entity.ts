@@ -9,8 +9,8 @@ import {
   UpdateDateColumn
 } from 'typeorm'
 import { compareValue, hashValue } from '../../utils/bcrypt'
-import { Integration } from './integration.entities'
-
+import { Integration } from './integration.entity'
+import { Event } from './event.entity'
 @Entity({ name: 'user' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -35,8 +35,11 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @OneToMany(() => Integration, (itegration) => itegration.user)
+  @OneToMany(() => Integration, (itegration) => itegration.user, { cascade: true })
   integrations: Integration[]
+
+  @OneToMany(() => Event, (event) => event.user, { cascade: true })
+  events: Event[]
 
   @BeforeInsert()
   @BeforeUpdate()
