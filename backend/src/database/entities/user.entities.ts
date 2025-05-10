@@ -1,5 +1,15 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn
+} from 'typeorm'
 import { compareValue, hashValue } from '../../utils/bcrypt'
+import { Integration } from './integration.entities'
 
 @Entity({ name: 'user' })
 export class User {
@@ -18,6 +28,15 @@ export class User {
 
   @Column({ nullable: true })
   imageUrl: string
+
+  @CreateDateColumn()
+  createdAt: Date
+
+  @UpdateDateColumn()
+  updatedAt: Date
+
+  @OneToMany(() => Integration, (itegration) => itegration.user)
+  integrations: Integration[]
 
   @BeforeInsert()
   @BeforeUpdate()

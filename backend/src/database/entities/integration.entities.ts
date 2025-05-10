@@ -1,0 +1,77 @@
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn
+} from 'typeorm'
+import { User } from './user.entities'
+
+export enum IntegrationProviderEnum {
+  GOOGLE = 'GOOGLE',
+  ZOOM = 'ZOOM'
+}
+
+export enum IntegrationAppTypeEnum {
+  GOOGLE_MEET_AND_CALENDAR = 'GOOGLE_MEET_AND_CALENDAR',
+  ZOOM_MEETING = 'ZOOM_MEETING',
+  OUTLOOK_CALENDAR = 'OUTLOOK_CALENDAR'
+}
+
+export enum IntegrationCategoryEnum {
+  CALENDAR_AND_VIDEO_CONFERENCING = 'CALENDAR_AND_VIDEO_CONFERENCING',
+  VIDEO_CONFERENCING = 'VIDEO_CONFERENCING',
+  CALENDAR = 'CALENDAR'
+}
+
+interface GoogleMeetAndCalendarMetadata {
+  scope: string
+  metadata: string
+}
+
+interface ZoomMetadata {}
+
+type IntegrationMetadata = GoogleMeetAndCalendarMetadata | ZoomMetadata
+
+@Entity({ name: 'integrations' })
+export class Integration {
+  @PrimaryGeneratedColumn('uuid')
+  id: string
+
+  @Column({ type: 'enum', enum: IntegrationProviderEnum })
+  provider: IntegrationProviderEnum
+  @Column({ type: 'enum', enum: IntegrationCategoryEnum })
+  category: IntegrationProviderEnum
+  @Column({ type: 'enum', enum: IntegrationAppTypeEnum })
+  app_type: IntegrationAppTypeEnum
+
+  @Column()
+  access_token: string
+
+  @Column({ nullable: true })
+  refresh_token: string
+
+  @Column({ type: 'bigint', nullable: true })
+  expiry_date: number | null
+
+  @Column({ type: 'json' })
+  metadata: IntegrationMetadata
+
+  @Column({ default: true })
+  isConnected: true
+
+  @Column({ nullable: false })
+  userId: string
+
+  @ManyToOne(() => User, (user) => user.integrations)
+  @JoinColumn({ name: 'userId' })
+  user: User
+
+  @CreateDateColumn()
+  createdAt: Date
+
+  @UpdateDateColumn()
+  updatedAt: Date
+}
