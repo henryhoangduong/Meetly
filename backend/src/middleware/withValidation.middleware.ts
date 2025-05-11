@@ -3,8 +3,9 @@ import { validate, ValidationError } from 'class-validator'
 import { NextFunction, Request, Response } from 'express'
 import { HTTPSTATUS } from '../config/http.config'
 import { ErrorCodeEnum } from '../enums/error-code.enum'
+import { asyncHandler } from './asyncHandler.middleware'
 
-type ValidationSource = 'body' | 'params' | 'query'
+export type ValidationSource = 'body' | 'params' | 'query'
 
 export function withValidation<T extends object>(DtoClass: new () => T, source: ValidationSource = 'body') {
   return function (handler: (req: Request, res: Response, dto: T) => Promise<any>) {
@@ -32,4 +33,11 @@ function formatValidationError(res: Response, errors: ValidationError[]) {
       message: err.constraints
     }))
   })
+}
+export function asyncHandlerAndValidation<T extends object>(
+  dto: new () => T,
+  source: ValidationSource,
+  handler: (req: Request, res: Response, dto: T) => Promise<any>
+) {
+  return asyncHandler(withValidation(dto, source)(handler))
 }

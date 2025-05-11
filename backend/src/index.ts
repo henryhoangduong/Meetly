@@ -13,7 +13,6 @@ const BASE_PATH = config.BASE_PATH
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(errorHandler)
 
 app.use(
   cors({
@@ -26,6 +25,7 @@ app.use(`${BASE_PATH}/auth`, authRoutes)
 app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   res.status(HTTPSTATUS.OK).send('hello world')
 })
+app.use(errorHandler)
 app.listen(config.PORT, async () => {
   await initializeDatabase()
   console.log(`Server listening on port ${config.PORT} in ${config.NODE_ENV}`)

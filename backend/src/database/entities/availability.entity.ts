@@ -5,7 +5,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
-  JoinColumn,
   OneToMany
 } from 'typeorm'
 import { User } from './user.entity'
@@ -19,7 +18,9 @@ export class Availability {
   @OneToOne(() => User, (user) => user.availability)
   user: User
 
-  @OneToMany(() => DayAvailability, (dayAva) => dayAva.availability)
+  @OneToMany(() => DayAvailability, (dayAvailability) => dayAvailability.availability, {
+    cascade: true
+  })
   days: DayAvailability[]
 
   @Column({ default: 30 })

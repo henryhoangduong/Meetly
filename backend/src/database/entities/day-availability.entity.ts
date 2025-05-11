@@ -1,7 +1,7 @@
-import { Entity, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Column } from 'typeorm'
+import { Entity, ManyToOne, PrimaryGeneratedColumn, Column } from 'typeorm'
 import { Availability } from './availability.entity'
 
-export enum DayOfWeekEnumType {
+export enum DayOfWeekEnum {
   SUNDAY = 'SUNDAY',
   MONDAY = 'MONDAY',
   TUESDAY = 'TUESDAY',
@@ -15,8 +15,12 @@ export enum DayOfWeekEnumType {
 export class DayAvailability {
   @PrimaryGeneratedColumn('uuid')
   id: string
+
   @ManyToOne(() => Availability, (availability) => availability.days)
   availability: Availability
+
+  @Column({ type: 'enum', enum: DayOfWeekEnum })
+  day: DayOfWeekEnum
 
   @Column()
   startTime: Date
