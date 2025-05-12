@@ -1,10 +1,12 @@
+import { compareValue, hashValue } from './../utils/bcrypt'
 import { AppDataSource } from '../config/database.config'
-import { RegisterDto } from '../database/dto/auth.dto'
+import { LoginDto, RegisterDto } from '../database/dto/auth.dto'
 import { Availability } from '../database/entities/availability.entity'
 import { DayAvailability, DayOfWeekEnum } from '../database/entities/day-availability.entity'
 import { User } from '../database/entities/user.entity'
-import { BadRequestException } from '../utils/app-error'
+import { BadRequestException, NotFoundException, UnauthorizedException } from '../utils/app-error'
 import { v4 as uuidv4 } from 'uuid'
+import { signJwtToken } from '../utils/jwt'
 
 export const registerService = async (registerDto: RegisterDto) => {
   const userRepository = AppDataSource.getRepository(User)
@@ -64,4 +66,26 @@ async function generateUsername(name: string): Promise<string> {
   }
 
   return username
+}
+
+export const loginService = async (loginDto: LoginDto) => {
+  const userRepository = AppDataSource.getRepository(User)
+  const user = await userRepository.findOne({
+    where: {
+      email: loginDto.email
+    }
+  })
+  if (!user) {
+    throw new UnauthorizedException('Invalid email or password')
+  }
+  const isPasswordValid = user.comparePassword(loginDto.password)
+  if (!isPasswordValid) {
+    throw new UnauthorizedException('Invalid email or password')
+  }
+  const { token, expiresAt } = signJwtToken({ userId: user.id })
+  return {
+    user: user.omitPassword(),
+    accessToken: token,
+    expiresAt
+  }
 }
