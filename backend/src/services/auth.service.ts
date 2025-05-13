@@ -1,10 +1,9 @@
-import { compareValue, hashValue } from './../utils/bcrypt'
 import { AppDataSource } from '../config/database.config'
 import { LoginDto, RegisterDto } from '../database/dto/auth.dto'
 import { Availability } from '../database/entities/availability.entity'
 import { DayAvailability, DayOfWeekEnum } from '../database/entities/day-availability.entity'
 import { User } from '../database/entities/user.entity'
-import { BadRequestException, NotFoundException, UnauthorizedException } from '../utils/app-error'
+import { BadRequestException, UnauthorizedException } from '../utils/app-error'
 import { v4 as uuidv4 } from 'uuid'
 import { signJwtToken } from '../utils/jwt'
 
