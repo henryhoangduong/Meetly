@@ -9,6 +9,7 @@ import { errorHandler } from './middleware/errorHandler.middleware'
 import { initializeDatabase } from './database/database'
 import { authRoutes } from './routes/auth.route'
 import passport from 'passport'
+import { eventRoutes } from './routes/event.route'
 
 const app = express()
 const BASE_PATH = config.BASE_PATH
@@ -24,6 +25,7 @@ app.use(
 )
 app.use(passport.initialize())
 app.use(`${BASE_PATH}/auth`, authRoutes)
+app.use(`${BASE_PATH}/event`, eventRoutes)
 
 app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   res.status(HTTPSTATUS.OK).send('hello world')

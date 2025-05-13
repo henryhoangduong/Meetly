@@ -22,7 +22,7 @@ export class Event {
   id: string
 
   @Column({ nullable: false })
-  tilte: string
+  title: string
 
   @Column({ nullable: true })
   description: string
@@ -42,7 +42,6 @@ export class Event {
 
   @UpdateDateColumn()
   updatedAt: Date
-
   @Column({ type: 'enum', enum: EventLocationEnumType })
   locationType: EventLocationEnumType
 }
