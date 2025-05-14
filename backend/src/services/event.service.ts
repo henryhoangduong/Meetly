@@ -6,7 +6,6 @@ import { BadRequestException, NotFoundException } from '../utils/app-error'
 import { slugify } from '../utils/helper'
 
 export const createEventService = async (userId: string, createEventDto: CreateEventDto) => {
-  console.log('createEventDto: ', createEventDto)
   const userRepository = await AppDataSource.getRepository(User)
   const eventRepostory = await AppDataSource.getRepository(Event)
   if (!Object.values(EventLocationEnumType).includes(createEventDto.locationType)) {
@@ -24,4 +23,19 @@ export const createEventService = async (userId: string, createEventDto: CreateE
   const event = eventRepostory.create({ ...createEventDto, slug, user: { id: userId } })
   await eventRepostory.save(event)
   return event
+}
+
+export const getUserEventService = async (userId: string) => {
+  const userRepository = await AppDataSource.getRepository(User)
+  const user = await userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.events', 'event')
+    .loadRelationCountAndMap('event._count.meetings', 'event.meetings')
+    .where('user.id=:id', { id: userId })
+    .orderBy('event.createdAt', 'DESC')
+    .getOne()
+  return {
+    events: user?.events,
+    username: user?.username
+  }
 }
