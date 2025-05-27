@@ -39,3 +39,20 @@ export const getUserEventService = async (userId: string) => {
     username: user?.username
   }
 }
+
+export const toggleEventPrivacyService = async (eventId: string, userId: string) => {
+  const eventRepostory = await AppDataSource.getRepository(Event)
+
+  const event = await eventRepostory.findOne({
+    where: {
+      id: eventId,
+      user: { id: userId }
+    }
+  })
+  if (!event) {
+    throw new NotFoundException('Event not found')
+  }
+  event.isPrivate = !event.isPrivate
+  await eventRepostory.save(event)
+  return event
+}

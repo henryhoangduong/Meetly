@@ -1,8 +1,9 @@
+import { EventIdDTO } from './../database/dto/event.dto'
 import { asyncHandlerAndValidation } from '../middleware/withValidation.middleware'
-import { CreateEventDto } from '../database/dto/event.dto'
+import { CreateEventDto, EventIdDTO } from '../database/dto/event.dto'
 import { HTTPSTATUS } from '../config/http.config'
 import { Request, Response } from 'express'
-import { createEventService, getUserEventService } from '../services/event.service'
+import { createEventService, getUserEventService, toggleEventPrivacyService } from '../services/event.service'
 import { asyncHandler } from '../middleware/asyncHandler.middleware'
 
 export const createEventController = asyncHandlerAndValidation(
@@ -29,3 +30,15 @@ export const getUserEventsController = asyncHandler(async (req: Request, res: Re
     }
   })
 })
+
+export const toggleEventPrivacyController = asyncHandlerAndValidation(
+  EventIdDTO,
+  'body',
+  async (req: Request, res: Response, eventIdDto) => {
+    const userId = req.user?.id
+    const event = await toggleEventPrivacyService(eventIdDto.eventId, userId || '')
+    return res.status(HTTPSTATUS.OK).json({
+      message: 'User event fetched successfully'
+    })
+  }
+)
