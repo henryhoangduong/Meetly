@@ -24,3 +24,19 @@ export class EventIdDTO {
   @IsNotEmpty()
   eventId: string
 }
+
+export class UserNameDTO {
+  @IsString()
+  @IsNotEmpty()
+  username: string
+}
+
+export class UserNameAndSlugDTO {
+  @IsString()
+  @IsNotEmpty()
+  username: string
+
+  @IsString()
+  @IsNotEmpty()
+  slug: string
+}

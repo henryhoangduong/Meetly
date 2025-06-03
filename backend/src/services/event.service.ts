@@ -56,3 +56,26 @@ export const toggleEventPrivacyService = async (eventId: string, userId: string)
   await eventRepostory.save(event)
   return event
 }
+
+export const getPublicEventsByUsernameService = async (userName: string) => {
+  const userRepository = AppDataSource.getRepository(User)
+  const user = await userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.events', 'event', 'event.isPrivate = :isPrivate', { isPrivate: false })
+    .where('user.username = :username', { userName })
+    .select(['user.id', 'user.name', 'user.imageUrl'])
+    .addSelect(['event.id', 'event.title', 'event.description', 'event.slug', 'event.duration'])
+    .orderBy('event.createdAt', 'DESC')
+    .getOne()
+  if (!user) {
+    throw new NotFoundException('User not found')
+  }
+  return {
+    user: {
+      name: user.name,
+      username: user.username,
+      imageUrl: user.imageUrl
+    },
+    events: user.events
+  }
+}
