@@ -1,5 +1,5 @@
 import { AppDataSource } from '../config/database.config'
-import { CreateEventDto } from '../database/dto/event.dto'
+import { CreateEventDto, UserNameAndSlugDTO } from '../database/dto/event.dto'
 import { Event, EventLocationEnumType } from '../database/entities/event.entity'
 import { User } from '../database/entities/user.entity'
 import { BadRequestException, NotFoundException } from '../utils/app-error'
@@ -78,4 +78,19 @@ export const getPublicEventsByUsernameService = async (userName: string) => {
     },
     events: user.events
   }
+}
+
+export const getPublicEventsByUsernameAndSlugService = async (userNameAndSlugDto: UserNameAndSlugDTO) => {
+  const { username, slug } = userNameAndSlugDto
+  const eventRepository = AppDataSource.getRepository(Event)
+  const event = await eventRepository
+    .createQueryBuilder('event')
+    .leftJoinAndSelect('event.user', 'user')
+    .where('user.username = :username', { username })
+    .andWhere('event.slug = :slug', { slug })
+    .andWhere('event.isPrivate = :isPrivate', { isPrivate: false })
+    .select(['event.id', 'event.title', 'event.description', 'event.slug', 'event.duration', 'event.locationType'])
+    .addSelect(['user.id', 'user.name', 'user.imageUrl'])
+    .getOne()
+  return event
 }

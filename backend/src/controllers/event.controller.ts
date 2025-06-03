@@ -1,4 +1,5 @@
-import { EventIdDTO, UserNameDTO } from './../database/dto/event.dto'
+import { getPublicEventsByUsernameAndSlugService } from './../services/event.service'
+import { UserNameAndSlugDTO, UserNameDTO } from './../database/dto/event.dto'
 import { asyncHandlerAndValidation } from '../middleware/withValidation.middleware'
 import { CreateEventDto, EventIdDTO } from '../database/dto/event.dto'
 import { HTTPSTATUS } from '../config/http.config'
@@ -57,6 +58,18 @@ export const getPublicEventsByUsernameController = asyncHandlerAndValidation(
       messasge: 'Public events fetched successfully',
       user,
       events
+    })
+  }
+)
+
+export const getPublicEventsByUsernameAndSlugController = asyncHandlerAndValidation(
+  UserNameAndSlugDTO,
+  'params',
+  async (req: Request, res: Response, userNameAndSlugDTO) => {
+    const event = await getPublicEventsByUsernameAndSlugService(userNameAndSlugDTO)
+    return res.status(HTTPSTATUS.OK).json({
+      message: 'Event details fetched successfully',
+      event
     })
   }
 )
