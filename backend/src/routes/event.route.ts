@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   createEventController,
+  deleteEventController,
   getPublicEventsByUsernameAndSlugController,
   getPublicEventsByUsernameController,
   getUserEventsController,
@@ -15,3 +16,4 @@ eventRoutes.get(`/all`, passportJwtAuthenticatJwt, getUserEventsController)
 eventRoutes.put(`/toggle-privacy`, passportJwtAuthenticatJwt, toggleEventPrivacyController)
 eventRoutes.get('/public/:username', getPublicEventsByUsernameController)
 eventRoutes.get('/public/:username/:slug', getPublicEventsByUsernameAndSlugController)
+eventRoutes.delete('/:eventId', passportJwtAuthenticatJwt, deleteEventController)

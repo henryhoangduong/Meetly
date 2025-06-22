@@ -5,7 +5,7 @@ import { User } from '../database/entities/user.entity'
 import { BadRequestException, NotFoundException } from '../utils/app-error'
 import { slugify } from '../utils/helper'
 
-export const createEventService = async (userId: string, createEventDto: CreateEventDto) => {
+const createEventService = async (userId: string, createEventDto: CreateEventDto) => {
   const userRepository = await AppDataSource.getRepository(User)
   const eventRepostory = await AppDataSource.getRepository(Event)
   if (!Object.values(EventLocationEnumType).includes(createEventDto.locationType)) {
@@ -25,7 +25,7 @@ export const createEventService = async (userId: string, createEventDto: CreateE
   return event
 }
 
-export const getUserEventService = async (userId: string) => {
+const getUserEventService = async (userId: string) => {
   const userRepository = await AppDataSource.getRepository(User)
   const user = await userRepository
     .createQueryBuilder('user')
@@ -40,7 +40,7 @@ export const getUserEventService = async (userId: string) => {
   }
 }
 
-export const toggleEventPrivacyService = async (eventId: string, userId: string) => {
+const toggleEventPrivacyService = async (eventId: string, userId: string) => {
   const eventRepostory = await AppDataSource.getRepository(Event)
 
   const event = await eventRepostory.findOne({
@@ -57,7 +57,7 @@ export const toggleEventPrivacyService = async (eventId: string, userId: string)
   return event
 }
 
-export const getPublicEventsByUsernameService = async (userName: string) => {
+const getPublicEventsByUsernameService = async (userName: string) => {
   const userRepository = AppDataSource.getRepository(User)
   const user = await userRepository
     .createQueryBuilder('user')
@@ -80,7 +80,7 @@ export const getPublicEventsByUsernameService = async (userName: string) => {
   }
 }
 
-export const getPublicEventsByUsernameAndSlugService = async (userNameAndSlugDto: UserNameAndSlugDTO) => {
+const getPublicEventsByUsernameAndSlugService = async (userNameAndSlugDto: UserNameAndSlugDTO) => {
   const { username, slug } = userNameAndSlugDto
   const eventRepository = AppDataSource.getRepository(Event)
   const event = await eventRepository
@@ -93,4 +93,25 @@ export const getPublicEventsByUsernameAndSlugService = async (userNameAndSlugDto
     .addSelect(['user.id', 'user.name', 'user.imageUrl'])
     .getOne()
   return event
+}
+
+const deleteEventService = async (userId: string, eventId: string) => {
+  const eventRepository = AppDataSource.getRepository(Event)
+  const event = await eventRepository.findOne({
+    where: { id: eventId, user: { id: userId } }
+  })
+  if (!event) {
+    throw new NotFoundException('Event not found')
+  }
+  await eventRepository.remove(event)
+  return { success: true }
+}
+
+export {
+  deleteEventService,
+  createEventService,
+  getUserEventService,
+  toggleEventPrivacyService,
+  getPublicEventsByUsernameService,
+  getPublicEventsByUsernameAndSlugService
 }

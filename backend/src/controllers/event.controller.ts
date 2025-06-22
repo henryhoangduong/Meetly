@@ -1,4 +1,4 @@
-import { getPublicEventsByUsernameAndSlugService } from './../services/event.service'
+import { deleteEventService, getPublicEventsByUsernameAndSlugService } from './../services/event.service'
 import { UserNameAndSlugDTO, UserNameDTO } from './../database/dto/event.dto'
 import { asyncHandlerAndValidation } from '../middleware/withValidation.middleware'
 import { CreateEventDto, EventIdDTO } from '../database/dto/event.dto'
@@ -70,6 +70,18 @@ export const getPublicEventsByUsernameAndSlugController = asyncHandlerAndValidat
     return res.status(HTTPSTATUS.OK).json({
       message: 'Event details fetched successfully',
       event
+    })
+  }
+)
+
+export const deleteEventController = asyncHandlerAndValidation(
+  EventIdDTO,
+  'params',
+  async (req: Request, res: Response, eventIdDto) => {
+    const userId = req.user?.id as string
+    await deleteEventService(userId, eventIdDto.eventId)
+    return res.status(HTTPSTATUS.OK).json({
+      message: 'Event deleted successfully'
     })
   }
 )
