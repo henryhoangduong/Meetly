@@ -11,6 +11,7 @@ import { authRoutes } from './routes/auth.route'
 import passport from 'passport'
 import { eventRoutes } from './routes/event.route'
 import { availabilityRoutes } from './routes/availability.route'
+import { integrationRoutes } from './routes/integration.route'
 
 const app = express()
 const BASE_PATH = config.BASE_PATH
@@ -28,6 +29,7 @@ app.use(passport.initialize())
 app.use(`${BASE_PATH}/auth`, authRoutes)
 app.use(`${BASE_PATH}/event`, eventRoutes)
 app.use(`${BASE_PATH}/availability`, availabilityRoutes)
+app.use(`${BASE_PATH}/integration`, integrationRoutes)
 
 app.get('/', async (req: Request, res: Response, next: NextFunction) => {
   res.status(HTTPSTATUS.OK).send('hello world')
