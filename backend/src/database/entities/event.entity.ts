@@ -23,7 +23,8 @@ export class Event {
 
   @Column({ nullable: false })
   title: string
-
+  @Column({ default: 30 })
+  duration: number
   @Column({ nullable: true })
   description: string
 
