@@ -38,3 +38,14 @@ export const getUserIntegrationsService = async (userId: string) => {
     }
   })
 }
+
+export const checkIntegrationService = async (userId: string, appType: IntegrationAppTypeEnum) => {
+  const integrationRepository = AppDataSource.getRepository(Integration)
+  const userIntegrations = await integrationRepository.find({
+    where: { userId: userId, app_type: appType }
+  })
+  if (!userIntegrations) {
+    return false
+  }
+  return true
+}
