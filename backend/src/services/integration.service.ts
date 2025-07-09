@@ -78,3 +78,33 @@ export const connectAppService = async (userId: string, appType: IntegrationAppT
 
   return { url: authUrl }
 }
+export const createIntegrationService = async (data: {
+  userId: string
+  provider: IntegrationProviderEnum
+  category: IntegrationCategoryEnum
+  app_type: IntegrationAppTypeEnum
+  access_token: string
+  refresh_token?: string
+  expiry_date: number | null
+  metadata: any
+}) => {
+  const integrationRepository = AppDataSource.getRepository(Integration)
+  const existingIntegration = await integrationRepository.find({
+    where: { userId: data.userId, app_type: data.app_type }
+  })
+  if (existingIntegration) {
+    throw new BadRequestException(`${data.app_type} already exists`)
+  }
+  const integration = integrationRepository.create({
+    provider: data.provider,
+    category: data.category,
+    app_type: data.app_type,
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expiry_date: data.expiry_date,
+    metadata: data.metadata,
+    isConnected: true
+  })
+  await integrationRepository.save(integration)
+  return integration
+}
