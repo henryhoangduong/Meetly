@@ -89,7 +89,7 @@ export const createIntegrationService = async (data: {
   metadata: any
 }) => {
   const integrationRepository = AppDataSource.getRepository(Integration)
-  const existingIntegration = await integrationRepository.find({
+  const existingIntegration = await integrationRepository.findOne({
     where: { userId: data.userId, app_type: data.app_type }
   })
   if (existingIntegration) {
@@ -103,8 +103,20 @@ export const createIntegrationService = async (data: {
     refresh_token: data.refresh_token,
     expiry_date: data.expiry_date,
     metadata: data.metadata,
+    userId: data.userId,
     isConnected: true
   })
   await integrationRepository.save(integration)
   return integration
+}
+export const validateGoogleToken = async (accessToken: string, refreshToken: string, expiryDate: number | null) => {
+  if (expiryDate === null || Date.now() >= expiryDate) {
+    googleOAuth2Client.setCredentials({
+      refresh_token: refreshToken
+    })
+    const { credentials } = await googleOAuth2Client.refreshAccessToken()
+    return credentials.access_token
+  }
+
+  return accessToken
 }
