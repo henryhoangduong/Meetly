@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { asyncHandler } from '../middleware/asyncHandler.middleware'
 import { HTTPSTATUS } from '../config/http.config'
-import { checkIntegrationService, getUserIntegrationsService } from '../services/integration.service'
+import { checkIntegrationService, connectAppService, getUserIntegrationsService } from '../services/integration.service'
 import { asyncHandlerAndValidation } from '../middleware/withValidation.middleware'
 import { AppTypeDTO } from '../database/dto/integration.dto'
 
@@ -31,7 +31,13 @@ export const checkIntegrationController = asyncHandlerAndValidation(
 export const connectAppController = asyncHandlerAndValidation(
   AppTypeDTO,
   'params',
-  async (req: Request, res: Response, appTypeDTO) => {
+
+  async (req: Request, res: Response, appTypeDto) => {
     const userId = req.user?.id
+
+    const { url } = await connectAppService(userId || '', appTypeDto.appType)
+    return res.status(HTTPSTATUS.OK).json({
+      url
+    })
   }
 )
