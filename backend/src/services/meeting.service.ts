@@ -2,6 +2,13 @@ import { LessThan, MoreThan } from 'typeorm'
 import { AppDataSource } from '../config/database.config'
 import { Meeting, MeetingStatus } from '../database/entities/meeting.entity'
 import { MeetingFilterEnum, MeetingFilterEnumType } from '../enums/meeting.enum'
+import { CreateMeetingDto } from '../database/dto/meeting.dto'
+import { Integration, IntegrationAppTypeEnum } from '../database/entities/integration.entity'
+import { Event, EventLocationEnumType } from '../database/entities/event.entity'
+import { BadRequestException, NotFoundException } from '../utils/app-error'
+import { validateGoogleToken } from './integration.service'
+import { googleOAuth2Client } from '../config/oauth.config'
+import { google } from 'googleapis'
 
 export const getUserMeetingsService = async (userId: string, filter: MeetingFilterEnumType): Promise<Meeting[]> => {
   const meetingRepository = AppDataSource.getRepository(Meeting)
@@ -24,4 +31,148 @@ export const getUserMeetingsService = async (userId: string, filter: MeetingFilt
     order: { startTime: 'ASC' }
   })
   return meetings || []
+}
+
+export const createMeetingBookingForGuestService = async (createMeetingDto: CreateMeetingDto) => {
+  const meetingRepository = AppDataSource.getRepository(Meeting)
+  const integrationRepository = AppDataSource.getRepository(Integration)
+  const eventRepostory = AppDataSource.getRepository(Event)
+
+  const startTime = new Date(createMeetingDto.startTime)
+  const endTime = new Date(createMeetingDto.endTime)
+
+  const event = await eventRepostory.findOne({
+    where: {
+      id: createMeetingDto.eventId,
+      isPrivate: false
+    }
+  })
+  if (!event) throw new NotFoundException('Event not found')
+  if (!Object.values(EventLocationEnumType).includes(event.locationType))
+    throw new BadRequestException('Invalid location type')
+
+  const meetIntegration = await integrationRepository.findOne({
+    where: {
+      user: { id: event.user.id },
+      app_type: IntegrationAppTypeEnum[event.locationType]
+    }
+  })
+
+  if (!meetIntegration) throw new BadRequestException('No video conferencing integration found')
+  let meetingLink: string = ''
+  let calendarEventId: string = ''
+  let calendarAppType: string = ''
+  if (event.locationType === EventLocationEnumType.GOOGLE_MEET_AND_CALENDAR) {
+    const { calendarType, calendar } = await getCalendarClient(
+      meetIntegration.app_type,
+      meetIntegration.access_token,
+      meetIntegration.refresh_token,
+      meetIntegration.expiry_date
+    )
+    const response = await calendar.events.insert({
+      calendarId: 'primary',
+      conferenceDataVersion: 1,
+      requestBody: {
+        summary: `${createMeetingDto.guestName} - ${event.title}`,
+        description: createMeetingDto.additionalInfo,
+        start: { dateTime: startTime.toISOString() },
+        end: { dateTime: endTime.toISOString() },
+        attendees: [{ email: createMeetingDto.guestEmail }, { email: event.user.email }],
+        conferenceData: {
+          createRequest: {
+            requestId: `${event.id}-${Date.now()}`
+          }
+        }
+      }
+    })
+    meetingLink = response.data.hangoutLink!
+    calendarEventId = response.data.id!
+    calendarAppType = calendarType
+  }
+  const meeting = meetingRepository.create({
+    event: { id: event.id },
+    user: event.user,
+    guestName: createMeetingDto.guestName,
+    guestEmail: createMeetingDto.guestEmail,
+    additionalInfo: createMeetingDto.additionalInfo,
+    startTime,
+    endTime,
+    meetLink: meetingLink,
+    calendarEventId: calendarEventId,
+    calendarAppType: calendarAppType
+  })
+
+  await meetingRepository.save(meeting)
+
+  return {
+    meetingLink,
+    meeting
+  }
+}
+async function getCalendarClient(
+  appType: IntegrationAppTypeEnum,
+  access_token: string,
+  refresh_token: string,
+  expiry_date: number | null
+) {
+  switch (appType) {
+    case IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR: {
+      const validToken = await validateGoogleToken(access_token, refresh_token, expiry_date)
+      googleOAuth2Client.setCredentials({ access_token: validToken })
+      const calendar = google.calendar({
+        version: 'v3',
+        auth: googleOAuth2Client
+      })
+      return {
+        calendar,
+        calendarType: IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR
+      }
+    }
+    default:
+      throw new BadRequestException(`Unsupported Calendar provider: ${appType}`)
+  }
+}
+
+export const cancelMeetingService = async (meetingId: string) => {
+  const meetingRepository = AppDataSource.getRepository(Meeting)
+  const integrationRepository = AppDataSource.getRepository(Integration)
+
+  const meeting = await meetingRepository.findOne({
+    where: { id: meetingId },
+    relations: ['event', 'event.user']
+  })
+  if (!meeting) throw new NotFoundException('Meeting not found')
+
+  try {
+    const calendarIntegration = await integrationRepository.findOne({
+      where: {
+        app_type: IntegrationAppTypeEnum[meeting.calendarAppType as keyof typeof IntegrationAppTypeEnum]
+      }
+    })
+
+    if (calendarIntegration) {
+      const { calendar, calendarType } = await getCalendarClient(
+        calendarIntegration.app_type,
+        calendarIntegration.access_token,
+        calendarIntegration.refresh_token,
+        calendarIntegration.expiry_date
+      )
+      switch (calendarType) {
+        case IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR:
+          await calendar.events.delete({
+            calendarId: 'primary',
+            eventId: meeting.calendarEventId
+          })
+          break
+        default:
+          throw new BadRequestException(`Unsupported calendar provider: ${calendarType}`)
+      }
+    }
+  } catch (error) {
+    throw new BadRequestException('Failed to delete event from calendar')
+  }
+
+  meeting.status = MeetingStatus.CANCELLED
+  await meetingRepository.save(meeting)
+  return { success: true }
 }

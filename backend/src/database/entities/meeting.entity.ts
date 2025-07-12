@@ -10,7 +10,7 @@ export enum MeetingStatus {
 @Entity()
 export class Meeting {
   @PrimaryGeneratedColumn('uuid')
-  is: string
+  id: string
 
   @ManyToOne(() => User, (user) => user.meetings)
   user: User
@@ -38,7 +38,8 @@ export class Meeting {
 
   @Column()
   calendarEventId: string
-
+  @Column()
+  calendarAppType: string
   @Column({ type: 'enum', enum: MeetingStatus })
   status: MeetingStatus
 
